@@ -45,7 +45,7 @@ PyInstaller cannot directly cross-compile a Windows `.exe` from Linux/macOS. Tha
 
 ## Public repository checklist
 
-- Check the repository contains source and documentation, but **no game archives, exported models, texture assets, AES keys, private directories, or credentials**.
+- Check the repository contains source and documentation, but **no game archives, exported models, texture assets, private directories, or credentials**. Compatibility notes may document community-reported keys for manual entry; do not bundle keys into the executable.
 - Verify third-party library licenses and their redistribution obligations before distributing packaged binaries.
 - Confirm GitHub Actions tests and the packaged application smoke test pass.
 - Download the exact executable produced by Actions and test it with your installed games on Windows.

@@ -83,10 +83,20 @@ If the AES key was not entered or UModel failed to read some packages, check the
 
 The asset list is cached in `%LOCALAPPDATA%\MultiEngineAssetBrowser\unreal_<folder-hash>.sqlite3`. An unchanged PAK archive is **not reparsed** at each refresh. Each export invokes `umodel.exe` to decode just the selected object/package into a **temporary output folder**, then uses Trimesh/Pillow/Blender to produce the requested output. These temporary decoded files are deleted after the operation. Your game's `.pak`, `.uasset`, `.uexp` and other files are never written to.
 
+### Session compatibility quick reference
+
+For **Session: Skate Sim (PC, Unreal Engine 4.27)**:
+
+- **UE override:** `ue4.27`
+- **PAK AES (community-reported):** `0x2d0e2b103cf0b3cb5ea8d6b774ea49400d36bd431f4bdeff74f99261bd1dabdc`
+- **UE Viewer:** select your downloaded `umodel.exe`
+
+This key was confirmed to work for one Session installation, not guaranteed for other builds or updates. Enter it manually; the browser does not store it. For a copy-friendly setup and notes on other games, see [Game compatibility](GAME_COMPATIBILITY.md).
+
 ### Engine version override and AES key
 
 - Leave **UE override** empty to let UE Viewer auto-detect the game engine version. If it fails, run `umodel.exe -taglist` in a command prompt and enter one of its supported tags (for example `ue4.27`, only **if your installed UE Viewer lists that exact tag**). Not every game's UE version is the same.
-- Leave **PAK AES** empty for unencrypted archives. If an archive uses AES encryption and you **lawfully have** the relevant key, you can supply 64 hexadecimal characters in this field. The application never saves that key to settings. We do not supply keys or bypass a game's access controls.
+- Leave **PAK AES** empty for unencrypted archives. If an archive uses AES encryption and you **lawfully have** the relevant key, you can supply 64 hexadecimal characters in this field. The application never saves that key to settings. The project does not attempt to discover encryption keys; community-reported values are documented for manual entry where appropriate.
 - If the package index cannot be decoded, the scanning diagnostics show which PAK failed. UE Viewer's own codec/engine compatibility limitations may also prevent individual asset extraction.
 
 ## What is and is not supported

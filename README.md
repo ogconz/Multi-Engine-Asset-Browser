@@ -24,9 +24,20 @@ A free, open-source Windows desktop utility for exploring locally installed game
 
 **Optional external tools:** [Blender](https://www.blender.org/download/) is required for **FBX** exports. GLB and PNG exports do not require Blender. UE Viewer is required for Unreal package inspection and export, but not for Unity. UE Viewer and Blender are **not distributed with this project**.
 
-**About encrypted game archives:** Some games require a user-supplied AES key. Keys are not included in this repository or saved by the app. Only inspect games and assets you are authorized to access and use.
+**About encrypted game archives:** Some games require a user-entered AES key. The application does not discover keys and never saves keys in its settings. See the community-tested Session configuration below. Only inspect games and assets you are authorized to access and use.
 
 > The `.exe` is produced on a Windows GitHub Actions runner using PyInstaller when a version tag is pushed. Windows and graphics drivers differ: if the packaged app does not launch, please open an issue with the relevant logs and Windows version. Unsigned community-built executables may trigger SmartScreen warnings; verify the download and scan it as you would any executable.
+
+### Session: Skate Sim (PC / Unreal Engine 4.27)
+
+For the Session `.pak` edition, choose **Engine: Unreal**, select the Session installation folder and locate [UE Viewer](https://www.gildor.org/en/projects/umodel) (`umodel.exe`). Then enter:
+
+| Setting | Value |
+|---|---|
+| **UE override** | `ue4.27` |
+| **PAK AES** | `0x2d0e2b103cf0b3cb5ea8d6b774ea49400d36bd431f4bdeff74f99261bd1dabdc` |
+
+This **community-reported AES key worked in a tested Session installation**. It may not apply to other versions, platforms or updates. Paste the full key including `0x` into the optional PAK AES field. The app never saves the key. The key is documented for manual entry; it isn't built into the EXE. See [Game compatibility and configuration](docs/GAME_COMPATIBILITY.md) for step-by-step instructions.
 
 ## Compatibility
 

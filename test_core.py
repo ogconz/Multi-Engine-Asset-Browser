@@ -165,8 +165,8 @@ class TestCore(unittest.TestCase):
         skater_data = self.root / "SkaterXL_Data"
         nested = skater_data / "StreamingAssets" / "aa" / "Windows" / "StandaloneWindows64"
         nested.mkdir(parents=True)
-        self.assertEqual(game_data_path(nested), skater_data)
-        self.assertEqual(game_data_path(self.root), skater_data)
+        self.assertTrue(game_data_path(nested).samefile(skater_data))
+        self.assertTrue(game_data_path(self.root).samefile(skater_data))
 
     def test_png_export_preserves_rgba_and_pixels(self):
         image = Image.new("RGBA", (64, 32), (14, 80, 216, 113))
