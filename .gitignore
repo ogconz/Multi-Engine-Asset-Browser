@@ -1,13 +1,41 @@
+# Python environments, caches, test/build output
 .venv/
+.build-venv/
+venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
-dist/
+.mypy_cache/
+.ruff_cache/
 build/
+dist/
 *.spec
-*.db
-*.sqlite
-*.sqlite3
 *.log
+*.tmp
+# OS and local project settings
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+# Never commit caches, private keys, local game files or extracted assets
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.pak
+*.uasset
+*.uexp
+*.ubulk
+*.ucas
+*.utoc
+*.bundle
+*.assets
+*.unity3d
+*.glb
+*.fbx
+*.png
+*.jpg
+*.jpeg
+*.key
+*.pem
+.env
+.env.*

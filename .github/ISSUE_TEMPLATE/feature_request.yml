@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest a new feature or supported asset format
+labels: [enhancement]
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: What would you like to add?
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Use case and supported game/engine
+    validations:
+      required: false

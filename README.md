@@ -1,52 +1,74 @@
 # Multi-Engine Asset Browser
 
-An open-source Windows desktop app for browsing, previewing and exporting supported **Unity** and **Unreal Engine 4** game assets.
+**Browse, preview, and export assets from supported Unity and Unreal Engine games.**
 
-**[Download latest Windows EXE](../../releases/latest)** · [Releases](../../releases) · [Report an issue](../../issues)
+**[Download the latest Windows `.exe`](../../releases/latest)** | [User guide](docs/USER_GUIDE.md) | [Build from source](#build-from-source) | [Report a problem](../../issues)
+
+A free, open-source Windows desktop utility for exploring locally installed game assets. It indexes supported formats, identifies asset types, opens models in a rotatable 3D viewer, previews textures, and exports to **GLB**, **FBX**, or **PNG**.
 
 ## Features
 
-- Unity asset bundles (e.g. Skater XL) and Unreal Engine 4 PAK files (e.g. Session: Skate Sim)
-- Search and filter asset classes including Texture2D, StaticMesh and SkeletalMesh
-- Interactive 3D mesh previews and texture previews
-- GLB, FBX and PNG exports, including multi-select / batch exports
-- Cached indexing and automatic asset type identification for UE4 packages
+- **Unity**: Read supported asset bundles with UnityPy, search meshes and textures, resolve referenced assets, and export model scenes or Texture2D images. Skater XL is an example.
+- **Unreal Engine 4**: Index `.pak` archives with pyuepak; identify `StaticMesh`, `SkeletalMesh`, `Texture2D`, and other package classes using [UE Viewer](https://www.gildor.org/en/projects/umodel). Session: Skate Sim is an example (UE4.27).
+- **Preview**: Interactive 3D mesh viewer (orbit, pan, zoom, wireframe) and texture preview.
+- **Batch exports**: Filter by a particular asset type and use Shift, Ctrl, or Ctrl+A to select and export multiple assets to a folder.
+- **Unreal background indexing**: Automatically identify asset classes, stop/resume, and keep a local SQLite cache.
+- **Read-only scanning**: Scans game installations without writing to the game files.
 
-## Installing
+## Download and run (no Python needed)
 
-Once the first GitHub Release has finished building, open **Releases** on the right and download **MultiEngineAssetBrowser.exe** from Assets. On Windows 10/11 x64, run the EXE directly. The packaged executable doesn't require a separate Python installation.
+1. Open **[Releases](../../releases/latest)** on the right side of this repository.
+2. Download **`MultiEngineAssetBrowser.exe`** from **Assets** (not the automatically generated *Source code* ZIP).
+3. Run the `.exe` on **Windows 10/11 64-bit**. No Python installation is required for the prebuilt executable.
+4. Choose your game folder and scan. For Unreal games, download **[UE Viewer / UModel](https://www.gildor.org/en/projects/umodel)** separately and select `umodel.exe` in the app.
 
-**Unreal:** Install [UE Viewer (UModel)](https://www.gildor.org/en/projects/umodel) and select `umodel.exe` within the app. **FBX export:** Install [Blender](https://www.blender.org/). These external executables are not bundled. Encrypted archives can require an AES key supplied by the user; none are distributed with this project.
+**Optional external tools:** [Blender](https://www.blender.org/download/) is required for **FBX** exports. GLB and PNG exports do not require Blender. UE Viewer is required for Unreal package inspection and export, but not for Unity. UE Viewer and Blender are **not distributed with this project**.
 
-## Run from source
+**About encrypted game archives:** Some games require a user-supplied AES key. Keys are not included in this repository or saved by the app. Only inspect games and assets you are authorized to access and use.
 
-Use **Python 3.11 x64** on Windows:
-
-```bat
-install_windows.bat
-run_windows.bat
-```
-
-To build the standalone EXE locally:
-
-```bat
-build_exe_windows.bat
-```
-
-The automatic Windows release workflow builds, tests and publishes the EXE and a SHA-256 checksum whenever a `v*` tag is pushed.
+> The `.exe` is produced on a Windows GitHub Actions runner using PyInstaller when a version tag is pushed. Windows and graphics drivers differ: if the packaged app does not launch, please open an issue with the relevant logs and Windows version. Unsigned community-built executables may trigger SmartScreen warnings; verify the download and scan it as you would any executable.
 
 ## Compatibility
 
-| Engine | Supported inputs |
-|---|---|
-| Unity | UnityPy-supported serialized files and bundles |
-| Unreal Engine 4 | UE Viewer-supported PAK packages and loose assets |
-| Unreal Engine 5 I/O Store | Not supported (`.utoc` / `.ucas`) |
+| Engine | Input | Preview/export |
+|---|---|---|
+| Unity | UnityPy-compatible bundles / serialized assets | Mesh/GameObject to GLB/FBX; Texture2D to PNG |
+| Unreal Engine 4 | `.pak` and supported loose Unreal packages | UE Viewer-supported StaticMesh/SkeletalMesh to GLB/FBX; Texture2D to PNG |
+| Unreal Engine 5 I/O Store | `.utoc` / `.ucas` | **Not currently supported** |
 
-Mesh rigging, materials, asset dependencies and particular game versions may affect export success.
+Game-specific engine changes, encrypted files, custom asset formats, missing mesh references, and unsupported UE Viewer package versions may prevent extraction. This is **not** a universal game extractor. See the [detailed user guide](docs/USER_GUIDE.md) for limitations and the UE4 version override.
 
-## License and legal
+## Build from source
 
-MIT license — see [LICENSE](LICENSE). The project isn't affiliated with Unity, Unreal Engine, Skater XL or Session developers. **No game files or AES keys** are included; extracted assets remain subject to their respective owners' rights.
+If you'd rather run the Python source or contribute:
 
-> This repository is being initialized. Until the full source is uploaded and a Windows build passes, the latest release link may not yet contain an executable.
+1. Install [Python 3.11 x64](https://www.python.org/downloads/) on Windows.
+2. Clone or download this repository and run `install_windows.bat`.
+3. Run `run_windows.bat` to launch the application.
+4. For a standalone Windows executable, run `build_exe_windows.bat`. The output is `dist\MultiEngineAssetBrowser.exe`. It requires the Python dependencies and PyInstaller only **at build time**.
+
+For command-line users:
+
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe multi_engine_browser.py
+```
+
+To run the automated tests:
+
+```powershell
+.venv\Scripts\python.exe -m unittest discover -p "test_*.py" -v
+```
+
+## Releases
+
+The source code lives in the normal **Code** tab. The **Releases** panel on GitHub will appear after the first release has been published. This repository contains a Windows [release workflow](.github/workflows/windows-release.yml): pushing a version tag such as `v2.2.0` runs the tests, builds the standalone `.exe`, and publishes a GitHub Release containing the executable and its SHA-256 checksum.
+
+Maintainers: see [Publishing a release](docs/PUBLISHING.md). The workflow can also be run manually to build an `.exe` for testing without publishing a release.
+
+## Contributing, licenses, and asset rights
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). This project's own source code is released under the **[MIT license](LICENSE)**. Third-party libraries and tools have their own licenses; see [Third-party software](docs/THIRD_PARTY.md).
+
+This is an independent utility and is **not affiliated with** the developers or publishers of Skater XL, Session: Skate Sim, Unity, Unreal Engine, or UE Viewer. No game assets, copyrighted game files, decryption keys, or third-party executables are distributed here. Exporting an asset does not give you permission to redistribute or commercially exploit that asset; follow applicable licenses, rights, and laws.

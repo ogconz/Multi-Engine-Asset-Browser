@@ -1,53 +1,77 @@
 name: Windows EXE Release
+
 on:
   workflow_dispatch:
   push:
     tags:
       - "v*"
+
 permissions:
   contents: write
+
 jobs:
   build-windows:
+    name: Test and package Windows x64 EXE
     runs-on: windows-latest
     timeout-minutes: 75
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11 x64
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           architecture: "x64"
           cache: pip
-      - name: Install dependencies
+
+      - name: Install runtime and build dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt "pyinstaller>=6.13,<7"
-      - name: Run tests
+
+      - name: Run unit tests
         run: python -m unittest discover -p "test_*.py" -v
-      - name: Build EXE
+
+      - name: Build standalone Windows GUI EXE
         run: python tools/build_exe.py
-      - name: Verify Windows EXE
+
+      - name: Verify actual packaged executable
         shell: pwsh
         run: |
-          $exe = Join-Path $pwd "dist\MultiEngineAssetBrowser.exe"
-          if (-not (Test-Path $exe)) { throw "EXE not found" }
-          $log = Join-Path $env:RUNNER_TEMP "meab-self-test.txt"
-          $p = Start-Process -FilePath $exe -ArgumentList @("--self-test", $log) -PassThru
-          if (-not $p.WaitForExit(90000)) { Stop-Process -Id $p.Id -Force; throw "Smoke test timed out" }
-          if ($p.ExitCode -ne 0) { throw "EXE self-test failed: $($p.ExitCode)" }
-          if (-not (Test-Path $log)) { throw "EXE did not create smoke-test log" }
-          if (-not (Select-String -Path $log -Pattern "^OK$" -Quiet)) { throw "EXE self-test did not report OK" }
+          $exe = Join-Path $pwd 'dist\MultiEngineAssetBrowser.exe'
+          if (-not (Test-Path $exe)) { throw "Missing executable: $exe" }
+          $log = Join-Path $env:RUNNER_TEMP 'meab-self-test.txt'
+          $proc = Start-Process -FilePath $exe -ArgumentList @('--self-test', $log) -PassThru
+          try {
+            if (-not $proc.WaitForExit(90000)) {
+              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+              throw 'Packaged EXE timed out during smoke test.'
+            }
+            if (Test-Path $log) { Get-Content $log }
+            if ($proc.ExitCode -ne 0) { throw "Packaged EXE failed smoke test: exit $($proc.ExitCode)" }
+            if (-not (Test-Path $log)) { throw 'Packaged EXE did not create smoke-test marker.' }
+            if (-not (Select-String -Path $log -Pattern '^OK$' -Quiet)) { throw 'Packaged EXE did not report OK.' }
+          } finally {
+            if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
+          }
+
       - name: Write SHA-256 checksum
         run: python tools/hash_exe.py dist/MultiEngineAssetBrowser.exe
-      - uses: actions/upload-artifact@v4
+
+      - name: Attach EXE to Actions run
+        uses: actions/upload-artifact@v4
         with:
           name: MultiEngineAssetBrowser-Windows-x64
           path: |
             dist/MultiEngineAssetBrowser.exe
             dist/MultiEngineAssetBrowser.exe.sha256
           if-no-files-found: error
-      - name: Publish GitHub Release
+          retention-days: 30
+
+      - name: Publish GitHub release for version tag
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Multi-Engine Asset Browser ${{ github.ref_name }}
           generate_release_notes: true
