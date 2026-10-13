@@ -1,4 +1,4 @@
-# Multi-Engine Asset Browser v2.2 - Source user guide
+# Multi-Engine Asset Browser v1.0.0 — user guide
 
 > **Standalone `.exe` users:** You do not need Python or the `.bat` installers. Download `MultiEngineAssetBrowser.exe` from the [GitHub Releases page](../../releases/latest) and launch it. This document also covers running the application directly from its Python source. UE Viewer is a separate download for Unreal extraction; Blender is needed for FBX export.
 
@@ -28,13 +28,13 @@ The **official UE Viewer** provides `-list`, `-export`, `-gltf`, `-png` and `-pa
 4. Double-click **`run_windows.bat`**.
 5. Select your game folder and choose **Engine: Auto**, then click **Scan / Refresh**.
 
-### Update an existing working v2.1 installation to v2.2
+### Updating an existing private development installation
 
 1. Close the app.
-2. Extract the **v2.2 Update ZIP** into the folder containing `multi_engine_browser.py` (for example `E:\Programs\Multi Engine Asset Browser`), replacing the old `multi_engine_browser.py` and `README.md` and adding the new `batch_core.py` and `test_batch_core.py`.
+2. Extract the **the public source package** into the folder containing `multi_engine_browser.py` (for example `E:\Programs\Multi Engine Asset Browser`), replacing the old `multi_engine_browser.py` and `README.md` and adding the new `batch_core.py` and `test_batch_core.py`.
 3. Double-click your existing **`run_windows.bat`**. **No rescan, no new pip packages, no reinstall, and no new UE Viewer setup are needed** if v2.1 already works. Your game indices, selected UE version, and settings are preserved. (As before, the PAK AES key is not stored.)
 
-### Shift/Ctrl multi-selection and batch export (new in v2.2)
+### Shift/Ctrl multi-selection and batch export
 
 1. Select a **specific class** from the **Type** dropdown, for example `Texture2D`, `StaticMesh`, `SkeletalMesh`, or (Unity) `Mesh`. Leaving Type as `All`, `3D candidates`, or `UnrealPackage` keeps **single selection only** to prevent bulk-exporting incompatible or unclassified assets.
 2. In the asset table, **Shift+click** to select a range; **Ctrl+click** to add/remove individual rows; **Ctrl+A** to select all **currently displayed** rows for that type. The selection count appears next to the result count.

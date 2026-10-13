@@ -3,6 +3,8 @@ name: Windows EXE Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - "v*"
 
@@ -75,6 +77,8 @@ jobs:
         with:
           name: Multi-Engine Asset Browser ${{ github.ref_name }}
           generate_release_notes: true
+          # Use introductory notes only for the first public release.
+          body_path: ${{ github.ref_name == 'v1.0.0' && 'docs/RELEASE_NOTES_v1.0.0.md' || '' }}
           fail_on_unmatched_files: true
           files: |
             dist/MultiEngineAssetBrowser.exe

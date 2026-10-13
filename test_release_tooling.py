@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
+import types
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from tools import build_exe, hash_exe
+from app_version import __version__
+from frozen_pak import import_pakfile
 
 
 class ReleaseToolingTests(unittest.TestCase):
@@ -21,7 +25,20 @@ class ReleaseToolingTests(unittest.TestCase):
         self.assertIn('--add-data', command)
         self.assertTrue(any('blender_convert.py' in x for x in command))
         self.assertIn('--collect-all', command)
+        self.assertIn('--additional-hooks-dir', command)
+        self.assertEqual(__version__, '1.0.0')
         self.assertEqual(command[-1], str(build_exe.ROOT / 'multi_engine_browser.py'))
+
+    def test_frozen_unreal_reader_prepares_runtime_folder(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            bundle = root / 'bundle'
+            fake_module = types.ModuleType('pyuepak')
+            sentinel = object()
+            fake_module.PakFile = sentinel
+            with patch.object(sys, 'frozen', True, create=True), patch.object(sys, '_MEIPASS', str(bundle), create=True), patch.dict(os.environ, {'LOCALAPPDATA': str(root / 'localapp')}), patch.dict(sys.modules, {'pyuepak': fake_module}):
+                self.assertIs(import_pakfile(), sentinel)
+                self.assertTrue((bundle / 'pyuepak').is_dir())
 
     def test_sha256_file_matches_binary(self):
         with tempfile.TemporaryDirectory() as temp:

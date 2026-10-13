@@ -20,6 +20,8 @@ Build-only tools:
 - [PyInstaller](https://pyinstaller.org/)
 - [GitHub Actions](https://docs.github.com/en/actions)
 
+**Proprietary runtime note:** pyuepak may fetch the Oodle codec DLL the first time it is used. The public Windows EXE does **not bundle Oodle**. It prepares pyuepak's temporary extraction folder and caches the upstream SHA-256-verified DLL locally across launches. Review the Oodle and original redistribution terms before using it.
+
 **Not bundled**: [UE Viewer (UModel)](https://www.gildor.org/en/projects/umodel) and [Blender](https://www.blender.org/). Users must obtain them separately and comply with their terms. Neither program is part of the `.exe`.
 
 Maintainers distributing binaries should review and fulfill all third-party license-notice and redistribution requirements for the exact resolved wheel versions (including Qt/PySide6 and VTK dependencies), and audit security updates before each public release. No game archives, third-party assets, or AES keys may be included in releases.

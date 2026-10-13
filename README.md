@@ -6,6 +6,14 @@
 
 A free, open-source Windows desktop utility for exploring locally installed game assets. It indexes supported formats, identifies asset types, opens models in a rotatable 3D viewer, previews textures, and exports to **GLB**, **FBX**, or **PNG**.
 
+## A message from conz
+
+> **A message from conz:** "Multi-Engine Asset Browser started as my idea. I decided what I wanted it to do, tested it with games, and gave feedback as it developed. I didn't personally write the code: the implementation and tooling were generated using AI. I'm sharing it as an open-source project in case other people find it useful. — conz"
+
+Read more in [About the project](docs/ABOUT.md).
+
+**First public release: v1.0.0.** Internal development builds previously used other version numbers; public releases now begin at 1.0.0 and will follow semantic versioning.
+
 ## Features
 
 - **Unity**: Read supported asset bundles with UnityPy, search meshes and textures, resolve referenced assets, and export model scenes or Texture2D images. Skater XL is an example.
@@ -21,6 +29,8 @@ A free, open-source Windows desktop utility for exploring locally installed game
 2. Download **`MultiEngineAssetBrowser.exe`** from **Assets** (not the automatically generated *Source code* ZIP).
 3. Run the `.exe` on **Windows 10/11 64-bit**. No Python installation is required for the prebuilt executable.
 4. Choose your game folder and scan. For Unreal games, download **[UE Viewer / UModel](https://www.gildor.org/en/projects/umodel)** separately and select `umodel.exe` in the app.
+
+**First Unreal scan:** pyuepak may obtain the Oodle codec from its upstream runtime source and cache it locally; this proprietary codec is not included in the Windows EXE. Initial setup may require internet access.
 
 **Optional external tools:** [Blender](https://www.blender.org/download/) is required for **FBX** exports. GLB and PNG exports do not require Blender. UE Viewer is required for Unreal package inspection and export, but not for Unity. UE Viewer and Blender are **not distributed with this project**.
 
@@ -74,7 +84,7 @@ To run the automated tests:
 
 ## Releases
 
-The source code lives in the normal **Code** tab. The **Releases** panel on GitHub will appear after the first release has been published. This repository contains a Windows [release workflow](.github/workflows/windows-release.yml): pushing a version tag such as `v2.2.0` runs the tests, builds the standalone `.exe`, and publishes a GitHub Release containing the executable and its SHA-256 checksum.
+The source code lives in the normal **Code** tab. The **Releases** panel on GitHub will appear after the first release has been published. This repository contains a Windows [release workflow](.github/workflows/windows-release.yml): pushing a version tag such as `v1.0.0` runs the tests, builds the standalone `.exe`, and publishes a GitHub Release containing the executable and its SHA-256 checksum.
 
 Maintainers: see [Publishing a release](docs/PUBLISHING.md). The workflow can also be run manually to build an `.exe` for testing without publishing a release.
 

@@ -24,6 +24,7 @@ import trimesh
 from PIL import Image
 
 from skaterxl_core import export_fbx, export_glb, export_png
+from frozen_pak import import_pakfile
 
 UE_PACKAGE_TYPE = 'UnrealPackage'
 UE_MODEL_TYPES = ('StaticMesh', 'SkeletalMesh')
@@ -144,7 +145,7 @@ class UnrealIndexer:
                     else:
                         if source.suffix.lower() == '.pak':
                             try:
-                                from pyuepak import PakFile
+                                PakFile = import_pakfile()
                             except ImportError as exc:
                                 raise RuntimeError(f'PAK indexing could not import pyuepak: {exc}. Run install_windows.bat to install pyuepak and cryptography.') from exc
                             pak = PakFile()

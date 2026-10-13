@@ -34,6 +34,8 @@ def command() -> list[str]:
         '--collect-all', 'pyvista',
         '--collect-all', 'pyvistaqt',
         '--collect-submodules', 'trimesh',
+        # Bundles only a tiny directory marker, not proprietary Oodle binaries.
+        '--additional-hooks-dir', str(ROOT / 'tools' / 'pyinstaller-hooks'),
         '--hidden-import', 'pyuepak',
         '--hidden-import', 'cryptography',
         str(ROOT / 'multi_engine_browser.py'),

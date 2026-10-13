@@ -1,4 +1,4 @@
-"""Multi-Engine Asset Browser v2.2 - Unity / Unreal desktop frontend.
+"""Multi-Engine Asset Browser v1.0.0 - Unity / Unreal desktop frontend.
 
 Unreal 4 PAK: pyuepak for read-only indexing, UE Viewer (umodel.exe) on demand.
 Unity: preserves Skater XL v1.1 paths, index, 3D preview and PNG/FBX/GLB exports.
@@ -11,6 +11,9 @@ import sys
 import time
 import traceback
 from pathlib import Path
+
+from app_version import __version__
+from frozen_pak import import_pakfile
 
 os.environ.setdefault("QT_API", "pyside6")
 
@@ -372,7 +375,7 @@ class ImageWindow(QMainWindow):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Multi-Engine Asset Browser | Unity + Unreal')
+        self.setWindowTitle(f'Multi-Engine Asset Browser v{__version__} | Unity + Unreal')
         self.resize(1440, 850)
         self.settings = QSettings('MultiEngineTools', 'AssetBrowser')
         legacy_settings = QSettings('SkaterXLTools', 'AssetBrowser')
@@ -399,7 +402,7 @@ class MainWindow(QMainWindow):
         root_layout = QVBoxLayout(main_widget)
         root_layout.setContentsMargins(19, 17, 19, 12)
         root_layout.setSpacing(10)
-        title = QLabel('Multi-Engine Asset Browser')
+        title = QLabel(f'Multi-Engine Asset Browser v{__version__}')
         title.setObjectName('appTitle')
         root_layout.addWidget(title)
         subtitle = QLabel('Unity bundles + Unreal Engine 4 PAKs | Search, preview in 3D, export GLB / FBX / PNG')
@@ -1145,7 +1148,7 @@ def _packaged_self_test(output_file: str) -> int:
     try:
         os.environ['QT_QPA_PLATFORM'] = 'offscreen'
         import UnityPy  # noqa: F401 - included in the frozen distribution
-        import pyuepak  # noqa: F401
+        import_pakfile()  # exercises frozen pyuepak/Oodle runtime
         import cryptography  # noqa: F401
         import vtkmodules.vtkRenderingOpenGL2  # noqa: F401
         import vtkmodules.vtkInteractionStyle  # noqa: F401
@@ -1166,6 +1169,7 @@ def main():
         raise SystemExit(_packaged_self_test(sys.argv[2]))
     app = QApplication(sys.argv)
     app.setApplicationName('Multi-Engine Asset Browser')
+    app.setApplicationVersion(__version__)
     app.setOrganizationName('MultiEngineTools')
     app.setStyle('Fusion')
     app.setStyleSheet(DARK_STYLE)
