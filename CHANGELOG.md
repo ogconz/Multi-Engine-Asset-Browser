@@ -1,13 +1,24 @@
 # Changelog
 
-## v1.0.1 — Windows UnityPy asset-loading fix (upcoming)
+## v1.0.2 — Unity texture preview compatibility fix (in testing)
+
+- Fix packaged Windows EXE failing to preview/export Unity Texture2D PNGs with a missing `fmod_toolkit/libfmod/Windows/x64/fmod.dll` error.
+- Prevent UnityPy's optional AudioClip importer from trying to load the FMOD audio codec when only textures or meshes are needed.
+- Keep the proprietary FMOD engine out of the EXE; audio conversion is not an implemented feature.
+- Extend the packaged EXE smoke test to import `UnityPy.export.Texture2DConverter` so this exact crash is caught during GitHub Actions packaging.
+- No rescanning, game file changes or settings reset should be required.
+
+**Release the v1.0.2 binary only after GitHub Actions and real-game preview/export testing pass.**
+
+
+## v1.0.1 — Windows UnityPy asset-loading fix
 
 - Fix packaged Windows EXE error `ModuleNotFoundError: No module named 'UnityPy.resources'` when opening or previewing assets.
 - Bundle UnityPy's dynamic submodules and resource data, including `lzma.tpk`.
 - Extend the packaged EXE smoke test to import `UnityPy.resources` and read its data, so future builds fail before release if this dependency is missing.
 - No game content or saved scan caches are modified.
 
-**The v1.0.1 binary will be released only after its GitHub Actions build and Windows testing pass.**
+**Released after Windows verification.**
 
 
 ## v1.0.0 — First public release

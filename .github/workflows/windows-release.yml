@@ -78,7 +78,7 @@ jobs:
           name: Multi-Engine Asset Browser ${{ github.ref_name }}
           generate_release_notes: true
           # Use introductory notes only for the first public release.
-          body_path: ${{ github.ref_name == 'v1.0.0' && 'docs/RELEASE_NOTES_v1.0.0.md' || github.ref_name == 'v1.0.1' && 'docs/RELEASE_NOTES_v1.0.1.md' || '' }}
+          body_path: ${{ github.ref_name == 'v1.0.0' && 'docs/RELEASE_NOTES_v1.0.0.md' || github.ref_name == 'v1.0.1' && 'docs/RELEASE_NOTES_v1.0.1.md' || github.ref_name == 'v1.0.2' && 'docs/RELEASE_NOTES_v1.0.2.md' || '' }}
           fail_on_unmatched_files: true
           files: |
             dist/MultiEngineAssetBrowser.exe

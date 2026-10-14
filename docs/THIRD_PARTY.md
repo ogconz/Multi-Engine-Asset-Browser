@@ -22,6 +22,8 @@ Build-only tools:
 
 **Proprietary runtime note:** pyuepak may fetch the Oodle codec DLL the first time it is used. The public Windows EXE does **not bundle Oodle**. It prepares pyuepak's temporary extraction folder and caches the upstream SHA-256-verified DLL locally across launches. Review the Oodle and original redistribution terms before using it.
 
+**FMOD audio dependency:** UnityPy's optional AudioClip converter normally imports [fmod_toolkit](https://pypi.org/project/fmod-toolkit/) and its proprietary FMOD runtime. Because Multi-Engine Asset Browser does not offer AudioClip extraction, the Windows executable uses a runtime hook to bypass this optional audio-only import for texture/mesh operations and **does not distribute FMOD's DLL**. If audio support is ever added, its separate licensing and distribution requirements must be reviewed first. [FMOD licensing](https://www.fmod.com/legal).
+
 **Not bundled**: [UE Viewer (UModel)](https://www.gildor.org/en/projects/umodel) and [Blender](https://www.blender.org/). Users must obtain them separately and comply with their terms. Neither program is part of the `.exe`.
 
 Maintainers distributing binaries should review and fulfill all third-party license-notice and redistribution requirements for the exact resolved wheel versions (including Qt/PySide6 and VTK dependencies), and audit security updates before each public release. No game archives, third-party assets, or AES keys may be included in releases.

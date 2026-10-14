@@ -1156,6 +1156,13 @@ def _packaged_self_test(output_file: str) -> int:
         with tpk_file.open('rb') as tpk_stream:
             if not tpk_stream.read(16):
                 raise RuntimeError('Missing/empty UnityPy.resources/lzma.tpk in EXE')
+        # A Texture2D preview loads UnityPy.export, which eagerly imports
+        # AudioClipConverter and (otherwise) loads native FMOD audio DLLs.
+        # Exercise this precise import path to prevent broken GUI previews.
+        from UnityPy.export import Texture2DConverter  # noqa: F401
+        import fmod_toolkit
+        if not getattr(fmod_toolkit, '_meab_optional_audio_disabled', False):
+            raise RuntimeError('Audio-only FMOD dependency was not disabled in frozen EXE')
         import_pakfile()  # exercises frozen pyuepak/Oodle runtime
         import cryptography  # noqa: F401
         import vtkmodules.vtkRenderingOpenGL2  # noqa: F401

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import runpy
 import sys
 import types
 import tempfile
@@ -29,8 +30,22 @@ class ReleaseToolingTests(unittest.TestCase):
         self.assertIn(('--collect-all', 'UnityPy'), flags)
         self.assertIn(('--hidden-import', 'UnityPy.resources'), flags)
         self.assertIn('--additional-hooks-dir', command)
-        self.assertEqual(__version__, '1.0.1')
+        self.assertIn(('--exclude-module', 'fmod_toolkit'), flags)
+        self.assertIn(('--exclude-module', 'pyfmodex'), flags)
+        self.assertIn(('--runtime-hook', str(build_exe.ROOT / 'tools' / 'runtime-hooks' / 'disable_unused_fmod.py')), flags)
+        self.assertEqual(__version__, '1.0.2')
         self.assertEqual(command[-1], str(build_exe.ROOT / 'multi_engine_browser.py'))
+
+    def test_runtime_hook_skips_fmod_audio_for_texture_previews(self):
+        hook = build_exe.ROOT / 'tools' / 'runtime-hooks' / 'disable_unused_fmod.py'
+        self.assertTrue(hook.is_file())
+        with patch.dict(sys.modules, {'fmod_toolkit': None}):
+            runpy.run_path(str(hook))
+            mod = sys.modules.get('fmod_toolkit')
+            self.assertIsNotNone(mod)
+            self.assertTrue(mod._meab_optional_audio_disabled)
+            with self.assertRaisesRegex(RuntimeError, 'AudioClip'):
+                mod.raw_to_wav(b'', 'test', 2, 44100)
 
     def test_frozen_unreal_reader_prepares_runtime_folder(self):
         with tempfile.TemporaryDirectory() as temp:

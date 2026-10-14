@@ -14,7 +14,7 @@ Read more in [About the project](docs/ABOUT.md).
 
 **Public releases began at v1.0.0.** Internal development builds previously used other version numbers; releases now follow semantic versioning.
 
-**Known v1.0.0 issue (Windows EXE):** Some Unity asset previews/exports fail with `No module named 'UnityPy.resources'`. A packaging fix is being tested for **v1.0.1**. The existing v1.0.0 installer is not fixed in place; check [Releases](../../releases) for the newer executable when it is published.
+**Release compatibility note:** v1.0.0 had a missing `UnityPy.resources` packaging error, fixed in v1.0.1. Some v1.0.1 Unity texture previews additionally fail because UnityPy eagerly loads an unused FMOD audio DLL. A fix avoiding that optional audio dependency is being tested as **v1.0.2**. Until verified and published, use the newest available release and report preview problems in Issues.
 
 ## Features
 
@@ -33,6 +33,8 @@ Read more in [About the project](docs/ABOUT.md).
 4. Choose your game folder and scan. For Unreal games, download **[UE Viewer / UModel](https://www.gildor.org/en/projects/umodel)** separately and select `umodel.exe` in the app.
 
 **First Unreal scan:** pyuepak may obtain the Oodle codec from its upstream runtime source and cache it locally; this proprietary codec is not included in the Windows EXE. Initial setup may require internet access.
+
+**Audio limitation:** This application does not provide Unity AudioClip extraction. The Windows package intentionally omits FMOD's proprietary audio engine; it is unnecessary for model and texture browsing.
 
 **Optional external tools:** [Blender](https://www.blender.org/download/) is required for **FBX** exports. GLB and PNG exports do not require Blender. UE Viewer is required for Unreal package inspection and export, but not for Unity. UE Viewer and Blender are **not distributed with this project**.
 

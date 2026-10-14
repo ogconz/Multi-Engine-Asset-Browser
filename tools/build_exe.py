@@ -32,6 +32,13 @@ def command() -> list[str]:
         # Frozen builds must include its resource package AND its data files.
         '--collect-all', 'UnityPy',
         '--hidden-import', 'UnityPy.resources',
+        # UnityPy.export imports AudioClipConverter even for textures. Audio
+        # extraction is outside this browser's features, so do not package
+        # the proprietary FMOD audio engine just to preview PNG textures.
+        # The runtime hook supplies a narrowly scoped optional-audio stub.
+        '--exclude-module', 'fmod_toolkit',
+        '--exclude-module', 'pyfmodex',
+        '--runtime-hook', str(ROOT / 'tools' / 'runtime-hooks' / 'disable_unused_fmod.py'),
         # Qt is handled by PyInstaller's PySide6 hooks. These collect options
         # cover the VTK/PyVista modules that are imported dynamically by the viewer.
         '--collect-all', 'vtkmodules',
