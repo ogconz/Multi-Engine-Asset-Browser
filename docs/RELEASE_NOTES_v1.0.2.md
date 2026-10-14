@@ -7,7 +7,8 @@ Fixes the error `Failed to load ... fmod_toolkit/libfmod/Windows/x64/fmod.dll` w
 ### Changes
 - Prevent UnityPy's unused AudioClip import from requiring a proprietary FMOD audio DLL when decoding textures.
 - Keep FMOD's audio engine out of the EXE. This browser handles supported models and textures, not AudioClip extraction.
-- Expand the Windows EXE smoke test to load UnityPy's texture converter, catching this problem before release.
+- Bundle archspec's CPU feature JSON database and UnityPy's ASTC/Texture2D decoder dependencies.
+- Expand the Windows EXE smoke test to load UnityPy's texture converter and decode synthetic RGBA32 pixels, catching dependency errors before release.
 - Preserve existing game folders, scan caches and settings.
 
 **Install:** Download the v1.0.2 `MultiEngineAssetBrowser.exe` from Assets and replace your older executable. No Python installation or new scan should be necessary.

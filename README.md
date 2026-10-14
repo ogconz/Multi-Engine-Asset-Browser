@@ -14,7 +14,7 @@ Read more in [About the project](docs/ABOUT.md).
 
 **Public releases began at v1.0.0.** Internal development builds previously used other version numbers; releases now follow semantic versioning.
 
-**Release compatibility note:** v1.0.0 had a missing `UnityPy.resources` packaging error, fixed in v1.0.1. Some v1.0.1 Unity texture previews additionally fail because UnityPy eagerly loads an unused FMOD audio DLL. A fix avoiding that optional audio dependency is being tested as **v1.0.2**. Until verified and published, use the newest available release and report preview problems in Issues.
+**Release compatibility note:** v1.0.0 had a missing `UnityPy.resources` packaging error, fixed in v1.0.1. Some v1.0.1 Unity texture previews additionally fail because UnityPy eagerly loads an unused FMOD audio DLL. A fix avoiding that optional audio dependency and packaging missing archspec CPU data is being tested as **v1.0.2**. Until verified and published, use the newest available release and report preview problems in Issues.
 
 ## Features
 

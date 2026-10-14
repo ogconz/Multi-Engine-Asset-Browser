@@ -32,6 +32,14 @@ def command() -> list[str]:
         # Frozen builds must include its resource package AND its data files.
         '--collect-all', 'UnityPy',
         '--hidden-import', 'UnityPy.resources',
+        # UnityPy's texture converter imports astc_encoder, which detects
+        # CPU capabilities with archspec. archspec reads JSON data files from
+        # archspec/json/cpu at runtime; PyInstaller misses them by default.
+        # Collect texture codec binaries and the architecture database so
+        # the onefile EXE can actually import/decode Unity textures.
+        '--collect-all', 'archspec',
+        '--collect-all', 'astc_encoder',
+        '--collect-all', 'texture2ddecoder',
         # UnityPy.export imports AudioClipConverter even for textures. Audio
         # extraction is outside this browser's features, so do not package
         # the proprietary FMOD audio engine just to preview PNG textures.

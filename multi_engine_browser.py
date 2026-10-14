@@ -1159,7 +1159,21 @@ def _packaged_self_test(output_file: str) -> int:
         # A Texture2D preview loads UnityPy.export, which eagerly imports
         # AudioClipConverter and (otherwise) loads native FMOD audio DLLs.
         # Exercise this precise import path to prevent broken GUI previews.
-        from UnityPy.export import Texture2DConverter  # noqa: F401
+        from UnityPy.export import Texture2DConverter
+        # astc_encoder reads archspec's architecture JSON during import.
+        # Confirm the data is present inside the onefile extraction directory
+        # and that the decoder works on an actual raw RGBA32 image.
+        import archspec
+        microarch_db = Path(archspec.__file__).resolve().parent / 'json' / 'cpu' / 'microarchitectures.json'
+        if not microarch_db.is_file():
+            raise RuntimeError(f'Missing archspec CPU database in EXE: {microarch_db}')
+        from UnityPy.enums import TextureFormat
+        sample = Texture2DConverter.parse_image_data(
+            b'\x10\x20\x30\xff' * 4, 2, 2, TextureFormat.RGBA32,
+            (2020, 3, 0, 0), 0, flip=False,
+        )
+        if sample.size != (2, 2) or sample.getpixel((0, 0)) != (16, 32, 48, 255):
+            raise RuntimeError('UnityPy texture decode self-test did not produce expected pixels')
         import fmod_toolkit
         if not getattr(fmod_toolkit, '_meab_optional_audio_disabled', False):
             raise RuntimeError('Audio-only FMOD dependency was not disabled in frozen EXE')

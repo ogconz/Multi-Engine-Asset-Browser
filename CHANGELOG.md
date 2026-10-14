@@ -5,7 +5,8 @@
 - Fix packaged Windows EXE failing to preview/export Unity Texture2D PNGs with a missing `fmod_toolkit/libfmod/Windows/x64/fmod.dll` error.
 - Prevent UnityPy's optional AudioClip importer from trying to load the FMOD audio codec when only textures or meshes are needed.
 - Keep the proprietary FMOD engine out of the EXE; audio conversion is not an implemented feature.
-- Extend the packaged EXE smoke test to import `UnityPy.export.Texture2DConverter` so this exact crash is caught during GitHub Actions packaging.
+- Include the `archspec` CPU microarchitecture JSON database, plus ASTC and Texture2D decoder libraries needed by UnityPy.
+- Extend the packaged EXE smoke test to load `UnityPy.export.Texture2DConverter`, verify the `archspec` JSON files, and decode a synthetic RGBA32 texture to check the pixel output.
 - No rescanning, game file changes or settings reset should be required.
 
 **Release the v1.0.2 binary only after GitHub Actions and real-game preview/export testing pass.**
