@@ -1,0 +1,75 @@
+name: Publish verified v1.0.2 release
+
+# One-time publication of the exact Windows EXE artifact tested by conz.
+# The dedicated Windows build succeeded at commit 770b20b5f8bf94a54bdd75f361a990644f66b2c4.
+# A version tag created via GITHUB_TOKEN does not trigger a second workflow,
+# so this workflow publishes the already-verified artifact directly.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-verified-v1.0.2.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'Publish verified v1.0.2 release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_REPO: ogconz/Multi-Engine-Asset-Browser
+      GH_TOKEN: ${{ github.token }}
+      TESTED_SHA: 770b20b5f8bf94a54bdd75f361a990644f66b2c4
+      TESTED_RUN: '38570746990'
+    steps:
+      - name: Checkout release notes
+        uses: actions/checkout@v6
+
+      - name: Check release version and tag availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(python -c 'from app_version import __version__; print(__version__)')" = '1.0.2'
+          if gh api "repos/$GH_REPO/git/ref/tags/v1.0.2" >/dev/null 2>&1; then
+            echo "v1.0.2 tag already exists; refusing to move it."
+            exit 1
+          fi
+          if gh release view v1.0.2 >/dev/null 2>&1; then
+            echo "v1.0.2 release already exists; refusing to overwrite it."
+            exit 1
+          fi
+
+      - name: Download the exact successful Windows build
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh run download "$TESTED_RUN" --repo "$GH_REPO" \
+            --name MultiEngineAssetBrowser-Windows-x64 --dir dist
+
+      - name: Verify downloaded executable checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/MultiEngineAssetBrowser.exe
+          test -f dist/MultiEngineAssetBrowser.exe.sha256
+          test "$(head -c 2 dist/MultiEngineAssetBrowser.exe)" = 'MZ'
+          test "$(stat -c%s dist/MultiEngineAssetBrowser.exe)" -gt 100000
+          (cd dist && sha256sum --check MultiEngineAssetBrowser.exe.sha256)
+
+      - name: Publish GitHub Release v1.0.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create v1.0.2 \
+            dist/MultiEngineAssetBrowser.exe \
+            dist/MultiEngineAssetBrowser.exe.sha256 \
+            --repo "$GH_REPO" \
+            --target "$TESTED_SHA" \
+            --title "Multi-Engine Asset Browser v1.0.2 - Texture Preview Fix" \
+            --notes-file docs/RELEASE_NOTES_v1.0.2.md \
+            --latest
+          gh release view v1.0.2 --repo "$GH_REPO" --json url,tagName,assets
