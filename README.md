@@ -12,7 +12,9 @@ A free, open-source Windows desktop utility for exploring locally installed game
 
 Read more in [About the project](docs/ABOUT.md).
 
-**First public release: v1.0.0.** Internal development builds previously used other version numbers; public releases now begin at 1.0.0 and will follow semantic versioning.
+**Public releases began at v1.0.0.** Internal development builds previously used other version numbers; releases now follow semantic versioning.
+
+**Known v1.0.0 issue (Windows EXE):** Some Unity asset previews/exports fail with `No module named 'UnityPy.resources'`. A packaging fix is being tested for **v1.0.1**. The existing v1.0.0 installer is not fixed in place; check [Releases](../../releases) for the newer executable when it is published.
 
 ## Features
 

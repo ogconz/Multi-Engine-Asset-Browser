@@ -25,8 +25,11 @@ class ReleaseToolingTests(unittest.TestCase):
         self.assertIn('--add-data', command)
         self.assertTrue(any('blender_convert.py' in x for x in command))
         self.assertIn('--collect-all', command)
+        flags = list(zip(command, command[1:]))
+        self.assertIn(('--collect-all', 'UnityPy'), flags)
+        self.assertIn(('--hidden-import', 'UnityPy.resources'), flags)
         self.assertIn('--additional-hooks-dir', command)
-        self.assertEqual(__version__, '1.0.0')
+        self.assertEqual(__version__, '1.0.1')
         self.assertEqual(command[-1], str(build_exe.ROOT / 'multi_engine_browser.py'))
 
     def test_frozen_unreal_reader_prepares_runtime_folder(self):

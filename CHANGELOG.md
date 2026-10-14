@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.1 — Windows UnityPy asset-loading fix (upcoming)
+
+- Fix packaged Windows EXE error `ModuleNotFoundError: No module named 'UnityPy.resources'` when opening or previewing assets.
+- Bundle UnityPy's dynamic submodules and resource data, including `lzma.tpk`.
+- Extend the packaged EXE smoke test to import `UnityPy.resources` and read its data, so future builds fail before release if this dependency is missing.
+- No game content or saved scan caches are modified.
+
+**The v1.0.1 binary will be released only after its GitHub Actions build and Windows testing pass.**
+
+
 ## v1.0.0 — First public release
 
 - First public Windows release of Multi-Engine Asset Browser, an idea by conz with AI-generated implementation.

@@ -1148,6 +1148,14 @@ def _packaged_self_test(output_file: str) -> int:
     try:
         os.environ['QT_QPA_PLATFORM'] = 'offscreen'
         import UnityPy  # noqa: F401 - included in the frozen distribution
+        # Loading an asset dynamically accesses this module and its bundled
+        # lzma.tpk data. Plain "import UnityPy" doesn't catch missing resources.
+        from importlib import resources as package_resources
+        import UnityPy.resources  # noqa: F401
+        tpk_file = package_resources.files('UnityPy.resources').joinpath('lzma.tpk')
+        with tpk_file.open('rb') as tpk_stream:
+            if not tpk_stream.read(16):
+                raise RuntimeError('Missing/empty UnityPy.resources/lzma.tpk in EXE')
         import_pakfile()  # exercises frozen pyuepak/Oodle runtime
         import cryptography  # noqa: F401
         import vtkmodules.vtkRenderingOpenGL2  # noqa: F401
