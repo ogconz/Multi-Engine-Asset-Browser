@@ -73,7 +73,7 @@ class ReplaceTests(unittest.TestCase):
         self.assertFalse(can_install('Unreal', 'StaticMesh'))
 
     def test_image_replacement_file_validation(self):
-        self.assertEqual(validate_replacement_file(self.png, 'texture'), self.png)
+        self.assertTrue(validate_replacement_file(self.png, 'texture').samefile(self.png))
         self.assertEqual(load_replacement_image(self.png).size, (3, 2))
         with self.assertRaises(ReplacementError):
             validate_replacement_file(self.png, 'mesh')
