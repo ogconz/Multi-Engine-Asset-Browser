@@ -733,7 +733,7 @@ class MainWindow(QMainWindow):
         self.replace_button.clicked.connect(self.open_replace_dialog)
         bottom.addWidget(self.replace_button)
         bottom.addStretch()
-        bottom.addWidget(QLabel('Read-only game input | Exports are separate files'))
+        bottom.addWidget(QLabel('Browse/export: read-only | Experimental Unity texture install makes a backup'))
         root_layout.addLayout(bottom)
         self.setCentralWidget(main_widget)
 
@@ -1413,6 +1413,11 @@ def _packaged_self_test(output_file: str) -> int:
         import vtkmodules.vtkInteractionStyle  # noqa: F401
         import vtkmodules.vtkRenderingFreeType  # noqa: F401
         app = QApplication([sys.argv[0]])
+        # Exercise the actual GUI setup and new replacement button in CI.
+        window = MainWindow()
+        if not hasattr(window, 'replace_button') or not window.replace_button.text().startswith('Replace'):
+            raise RuntimeError('Replace Mesh / Texture GUI button is missing')
+        window.close()
         mesh = pv.Sphere(theta_resolution=8, phi_resolution=8)
         assert mesh.n_points > 0
         assert app is not None
