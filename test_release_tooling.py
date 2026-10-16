@@ -25,6 +25,7 @@ class ReleaseToolingTests(unittest.TestCase):
         self.assertIn('MultiEngineAssetBrowser', command)
         self.assertIn('--add-data', command)
         self.assertTrue(any('blender_convert.py' in x for x in command))
+        self.assertTrue(any('blender_import_fbx.py' in x for x in command))
         self.assertIn('--collect-all', command)
         flags = list(zip(command, command[1:]))
         self.assertIn(('--collect-all', 'UnityPy'), flags)
@@ -36,7 +37,7 @@ class ReleaseToolingTests(unittest.TestCase):
         self.assertIn(('--exclude-module', 'fmod_toolkit'), flags)
         self.assertIn(('--exclude-module', 'pyfmodex'), flags)
         self.assertIn(('--runtime-hook', str(build_exe.ROOT / 'tools' / 'runtime-hooks' / 'disable_unused_fmod.py')), flags)
-        self.assertEqual(__version__, '1.0.2')
+        self.assertEqual(__version__, '1.1.0-dev.1')
         self.assertEqual(command[-1], str(build_exe.ROOT / 'multi_engine_browser.py'))
 
     def test_runtime_hook_skips_fmod_audio_for_texture_previews(self):

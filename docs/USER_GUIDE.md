@@ -151,3 +151,8 @@ The test suite includes Unity cross-bundle / glTF / PNG tests plus simulated Unr
 - [pyuepak](https://github.com/stas96111/pyuepak) - Unreal PAK index reader
 - [UE Viewer](https://www.gildor.org/en/projects/umodel) - Unreal mesh/texture conversion (installed separately)
 - [PySide6](https://pypi.org/project/PySide6/), [PyVista](https://docs.pyvista.org/), [Trimesh](https://trimesh.org/), [Pillow](https://python-pillow.github.io/)
+
+
+## Experimental replacement workflow (v1.1.0 development only)
+
+The development build includes **Replace Mesh / Texture...**: choose a GLB/FBX or PNG/JPG file, preview original/replacement, and install only where supported. Unity Texture2D container rewriting is experimental and provides a full backup and Restore Original. Unity meshes and Unreal assets have previews only; the in-game installer is disabled until compatible modding paths are implemented. See [Replacement guide](REPLACEMENTS.md). This is not part of public v1.0.2.

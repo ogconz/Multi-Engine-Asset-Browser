@@ -14,7 +14,7 @@ Read more in [About the project](docs/ABOUT.md).
 
 **Public releases began at v1.0.0.** Internal development builds previously used other version numbers; releases now follow semantic versioning.
 
-**Release compatibility note:** v1.0.0 had a missing `UnityPy.resources` packaging error, fixed in v1.0.1. Some v1.0.1 Unity texture previews additionally fail because UnityPy eagerly loads an unused FMOD audio DLL. A fix avoiding that optional audio dependency and packaging missing archspec CPU data is being tested as **v1.0.2**. Until verified and published, use the newest available release and report preview problems in Issues.
+**Development status:** The latest public Windows release is **v1.0.2** (Unity texture-preview fix). Work on a **v1.1.0 development preview** adds replacement-file selection, previews and an experimental Unity Texture2D installer. Unity mesh and Unreal in-game replacements are **not implemented yet** and must not be mistaken for installed mods.
 
 ## Features
 
@@ -24,6 +24,14 @@ Read more in [About the project](docs/ABOUT.md).
 - **Batch exports**: Filter by a particular asset type and use Shift, Ctrl, or Ctrl+A to select and export multiple assets to a folder.
 - **Unreal background indexing**: Automatically identify asset classes, stop/resume, and keep a local SQLite cache.
 - **Read-only scanning**: Scans game installations without writing to the game files.
+
+### Experimental Replace Mesh / Texture — v1.1.0 development
+
+The in-development **Replace Mesh / Texture...** dialog previews the original game asset and lets you choose and preview your own FBX/GLB mesh or PNG/JPG texture, without scale or position controls.
+
+**In-game install support today is limited to Unity Texture2D** in compatible Unity asset containers. It rewrites the game asset with a full original backup and provides **Restore Original**. **Mesh installs and every Unreal asset install are preview-only and explicitly disabled** until they have a tested game-specific installer. See [Replacement development notes and safety](docs/REPLACEMENTS.md).
+
+The experimental feature is available in the **development build artifacts on GitHub Actions**, not in the public v1.0.2 EXE. Do not treat it as generally compatible with all Unity or Unreal games.
 
 ## Download and run (no Python needed)
 

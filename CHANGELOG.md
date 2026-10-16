@@ -1,6 +1,17 @@
 # Changelog
 
-## v1.0.2 — Unity texture preview compatibility fix (in testing)
+## v1.1.0-dev.1 — Experimental replacement workflow (NOT RELEASED)
+
+- Add **Replace Mesh / Texture...** to the Windows browser for supported asset types.
+- Pick and preview a replacement mesh (GLB, or FBX via Blender) or texture (PNG/JPG).
+- Separate original and replacement previews, without geometry adjustment controls.
+- First experimental real in-game installer: **Unity Texture2D** via UnityPy rewriting, with full original container backup, source-file validation, atomic write, and Restore Original.
+- Clearly mark **Unity meshes and all Unreal replacements** as *preview only / not installed* until game-specific mod installers and cooked asset support are implemented.
+- Include local tests for format validation, Unity install/restore, and external modification safety.
+- Public release **v1.0.2 stays unchanged**. Do not publish v1.1.0 until in-game testing and additional engine adapters are verified.
+
+
+## v1.0.2 — Unity texture preview compatibility fix
 
 - Fix packaged Windows EXE failing to preview/export Unity Texture2D PNGs with a missing `fmod_toolkit/libfmod/Windows/x64/fmod.dll` error.
 - Prevent UnityPy's optional AudioClip importer from trying to load the FMOD audio codec when only textures or meshes are needed.
@@ -9,7 +20,7 @@
 - Extend the packaged EXE smoke test to load `UnityPy.export.Texture2DConverter`, verify the `archspec` JSON files, and decode a synthetic RGBA32 texture to check the pixel output.
 - No rescanning, game file changes or settings reset should be required.
 
-**Release the v1.0.2 binary only after GitHub Actions and real-game preview/export testing pass.**
+**Published after successful Windows texture-preview and PNG export testing.**
 
 
 ## v1.0.1 — Windows UnityPy asset-loading fix

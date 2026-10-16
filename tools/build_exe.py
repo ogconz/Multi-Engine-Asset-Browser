@@ -28,6 +28,8 @@ def command() -> list[str]:
         # The Blender helper is executed by Blender's bundled Python, so it
         # must remain an actual .py file rather than a PyInstaller code module.
         '--add-data', f'{ROOT / "blender_convert.py"}{os.pathsep}.',
+        # Blender executes this helper when importing an FBX for preview.
+        '--add-data', f'{ROOT / "blender_import_fbx.py"}{os.pathsep}.',
         # UnityPy uses importlib.resources to open lzma.tpk during asset reads.
         # Frozen builds must include its resource package AND its data files.
         '--collect-all', 'UnityPy',

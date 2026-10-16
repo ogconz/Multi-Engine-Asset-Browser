@@ -20,7 +20,7 @@ os.environ.setdefault("QT_API", "pyside6")
 from PySide6.QtCore import Qt, QItemSelectionModel, QSettings, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QPixmap
 from PySide6.QtWidgets import (
-    QApplication, QCheckBox, QComboBox, QFileDialog, QHBoxLayout,
+    QApplication, QCheckBox, QComboBox, QDialog, QFileDialog, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMessageBox, QPlainTextEdit,
     QProgressBar, QPushButton, QScrollArea, QSplitter, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
@@ -44,6 +44,11 @@ from unreal_core import (
 )
 from multi_core import detect_engine, resolved_game_root, ui_can_export, ui_can_preview
 from batch_core import can_batch_export, multi_select_allowed, plan_export_paths, run_batch_exports
+from replacement_core import (
+    can_install, has_installed_replacement, install_unity_texture,
+    load_replacement_image, load_replacement_mesh, replacement_kind,
+    restore_unity_texture, validate_replacement_file,
+)
 
 DARK_STYLE = """
 QMainWindow, QWidget { background: #151922; color: #e8eaf0; font-size: 12px; }
@@ -218,6 +223,174 @@ class BatchExportThread(QThread):
             if self.aes_key:
                 message = message.replace(self.aes_key, '<redacted AES key>')
             self.failed.emit(message)
+
+
+class TextureReplaceThread(QThread):
+    """Keep experimental Unity archive installs and restores off the GUI thread."""
+    succeeded = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, root, asset, source='', restore=False):
+        super().__init__()
+        self.root, self.asset, self.source, self.restore = root, asset, source, restore
+
+    def run(self):
+        try:
+            if self.restore:
+                result = restore_unity_texture(self.root, self.asset.bundle)
+            else:
+                result = install_unity_texture(self.root, self.asset, self.source)
+            self.succeeded.emit(result)
+        except Exception as exc:
+            self.failed.emit(f'{type(exc).__name__}: {exc}')
+
+
+class ReplaceAssetDialog(QDialog):
+    """Pick a file, preview original/replacement, then install only if supported."""
+
+    def __init__(self, browser, asset):
+        super().__init__(browser)
+        self.browser = browser
+        self.asset = asset
+        self.engine = browser.engine
+        self.kind = replacement_kind(self.engine, asset.type)
+        self.source = ''
+        self.setWindowTitle(f'Replace {self.kind.title()} | {asset.name}')
+        self.setMinimumWidth(650)
+        layout = QVBoxLayout(self)
+        headline = QLabel(f'Original: {asset.name}  •  {self.engine}  •  {asset.type}')
+        headline.setWordWrap(True)
+        layout.addWidget(headline)
+
+        original = QPushButton('Preview Original')
+        original.clicked.connect(lambda: browser.preview_specific_asset(asset))
+        layout.addWidget(original)
+
+        label = QLabel('Choose your own replacement. No scale, position or rotation adjustments are applied.')
+        label.setWordWrap(True)
+        layout.addWidget(label)
+        choose = QPushButton('Choose FBX / GLB...' if self.kind == 'mesh' else 'Choose PNG / JPG...')
+        choose.clicked.connect(self.choose_replacement)
+        layout.addWidget(choose)
+        self.path_label = QLabel('No replacement selected')
+        self.path_label.setWordWrap(True)
+        self.path_label.setObjectName('summary')
+        layout.addWidget(self.path_label)
+        preview = QPushButton('Preview Replacement')
+        preview.clicked.connect(self.preview_replacement)
+        layout.addWidget(preview)
+
+        self.note = QLabel()
+        self.note.setWordWrap(True)
+        layout.addWidget(self.note)
+        install = QPushButton('Install Replacement in Game')
+        install.setObjectName('primary')
+        install.setEnabled(can_install(self.engine, asset.type))
+        install.clicked.connect(self.install)
+        layout.addWidget(install)
+
+        if can_install(self.engine, asset.type):
+            self.note.setText(
+                'EXPERIMENTAL: modifies the original Unity Texture2D archive after backing '
+                'up the FULL game container. CLOSE THE GAME before installing. '
+                'Use Restore Original to undo changes if needed.'
+            )
+            restore = QPushButton('Restore Original Game Archive')
+            restore.setEnabled(has_installed_replacement(browser.root, asset.bundle))
+            restore.clicked.connect(self.restore)
+            layout.addWidget(restore)
+        else:
+            self.note.setText(
+                'PREVIEW ONLY — NOT INSTALLED. This game/asset still needs a verified '
+                'in-game replacement adapter. Unity meshes need compatible serialization '
+                'or a runtime loader; Unreal assets require correctly cooked packages and '
+                'a game-specific mod loading workflow.'
+            )
+        dismiss = QPushButton('Close')
+        dismiss.clicked.connect(self.close)
+        layout.addWidget(dismiss)
+
+    def choose_replacement(self):
+        file_filter = 'Mesh files (*.glb *.fbx)' if self.kind == 'mesh' else 'Images (*.png *.jpg *.jpeg)'
+        source, _ = QFileDialog.getOpenFileName(
+            self, 'Choose a replacement file', str(Path.home()), file_filter
+        )
+        if source:
+            try:
+                self.source = str(validate_replacement_file(source, self.kind))
+                self.path_label.setText(f'Selected: {self.source}')
+                self.preview_replacement()
+            except Exception as exc:
+                self.source = ''
+                QMessageBox.warning(self, 'Replacement file unavailable', f'{type(exc).__name__}: {exc}')
+
+    def preview_replacement(self):
+        if not self.source:
+            QMessageBox.information(self, 'Choose a file', 'Please choose a replacement first.')
+            return
+        try:
+            if self.kind == 'texture':
+                image = load_replacement_image(self.source)
+                win = ImageWindow(self.asset, image)
+                win.setWindowTitle(f'Replacement Texture Preview (not installed) | {self.asset.name}')
+                details = f'{image.width} × {image.height} pixels'
+            else:
+                blender = str(self.browser.settings.value('blender_exe', ''))
+                if Path(self.source).suffix.lower() == '.fbx' and not Path(blender).is_file():
+                    blender = find_blender_exe() or ''
+                    if not blender or not Path(blender).is_file():
+                        blender, _ = QFileDialog.getOpenFileName(
+                            self, 'Select Blender to preview FBX', str(Path.home()),
+                            'Blender (blender.exe);;Executables (*.exe)'
+                        )
+                    if not blender:
+                        return
+                    self.browser.settings.setValue('blender_exe', blender)
+                scene = load_replacement_mesh(
+                    self.source, blender, Path(__file__).resolve().parent / 'blender_import_fbx.py'
+                )
+                win = ModelWindow(self.asset, scene, ['Replacement preview only; not installed in any game'])
+                win.setWindowTitle(f'Replacement Mesh Preview (not installed) | {self.asset.name}')
+                details = f'{len(scene.geometry)} mesh component(s)'
+            self.browser.viewers.append(win)
+            win.destroyed.connect(lambda *_: self.browser._forget_viewer(win))
+            win.show()
+            self.path_label.setText(f'Replacement: {Path(self.source).name}  •  {details}')
+        except Exception as exc:
+            QMessageBox.warning(self, 'Could not preview replacement', f'{type(exc).__name__}: {exc}')
+
+    def install(self):
+        if not can_install(self.engine, self.asset.type):
+            return
+        if not self.source:
+            QMessageBox.information(self, 'Choose a file', 'Select and preview a replacement first.')
+            return
+        yes = QMessageBox.question(
+            self, 'Install Unity texture into game?',
+            'CLOSE THE GAME before proceeding. This modifies a game asset container '
+            'on disk. The original FULL container is backed up outside the game. '
+            'Some games will reject modified containers.\n\n'
+            f'Game asset: {self.asset.name}\nContainer: {self.asset.bundle}\n'
+            f'Replacement: {self.source}\n\nInstall now?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if yes == QMessageBox.StandardButton.Yes:
+            if self.browser.start_texture_change(self.asset, source=self.source):
+                self.accept()
+
+    def restore(self):
+        yes = QMessageBox.question(
+            self, 'Restore original Unity container?',
+            'CLOSE THE GAME first. Restoring the original container will undo ALL '
+            'texture changes made to this game archive since the backup.\n\n'
+            f'Container: {self.asset.bundle}\n\nRestore now?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if yes == QMessageBox.StandardButton.Yes:
+            if self.browser.start_texture_change(self.asset, restore=True):
+                self.accept()
 
 
 class ModelWindow(QMainWindow):
@@ -397,6 +570,7 @@ class MainWindow(QMainWindow):
         self._total_results = 0
         self.viewers = []
         self.assets = []
+        self.replace_dialogs = []
 
         main_widget = QWidget()
         root_layout = QVBoxLayout(main_widget)
@@ -552,6 +726,12 @@ class MainWindow(QMainWindow):
         self.png_button = QPushButton('Export PNG')
         self.png_button.clicked.connect(lambda: self.export('png'))
         bottom.addWidget(self.png_button)
+        self.replace_button = QPushButton('Replace Mesh / Texture...')
+        self.replace_button.setToolTip(
+            'Preview both originals and replacements. In-game installation currently supports Unity Texture2D only.'
+        )
+        self.replace_button.clicked.connect(self.open_replace_dialog)
+        bottom.addWidget(self.replace_button)
         bottom.addStretch()
         bottom.addWidget(QLabel('Read-only game input | Exports are separate files'))
         root_layout.addLayout(bottom)
@@ -883,6 +1063,7 @@ class MainWindow(QMainWindow):
         many = len(keys) > 1
         busy = bool(self.batch_worker) or any(w and w.isRunning() for w in (self.current_worker, self.scanner))
         identifying = bool(self.inspector and self.inspector.isRunning())
+        self.replace_button.setEnabled(bool(key and replacement_kind(self.engine, key.type) and not busy and not identifying))
         self.inspect_button.setEnabled(bool(key and self.engine == 'Unreal' and not busy and not identifying))
         self.inspect_button.setVisible(self.engine == 'Unreal')
         self.preview_button.setEnabled(bool(key and ui_can_preview(self.engine, key.type) and not busy))
@@ -935,6 +1116,52 @@ class MainWindow(QMainWindow):
         umodel = self._require_umodel() if self.engine == 'Unreal' else ''
         if self.engine == 'Unity' or umodel:
             self.launch_task(key, 'preview', umodel=umodel)
+
+
+    def preview_specific_asset(self, key):
+        if self.current_worker and self.current_worker.isRunning():
+            QMessageBox.information(self, 'Please wait', 'Finish the current operation first.')
+            return
+        if not ui_can_preview(self.engine, key.type):
+            return
+        umodel = self._require_umodel() if self.engine == 'Unreal' else ''
+        if self.engine == 'Unity' or umodel:
+            self.launch_task(key, 'preview', umodel=umodel)
+
+    def open_replace_dialog(self):
+        key = self.selected_key()
+        if not key or not replacement_kind(self.engine, key.type):
+            return
+        dlg = ReplaceAssetDialog(self, key)
+        self.replace_dialogs.append(dlg)
+        dlg.finished.connect(lambda *_: self.replace_dialogs.remove(dlg) if dlg in self.replace_dialogs else None)
+        dlg.show()
+
+    def start_texture_change(self, asset, source='', restore=False):
+        if self.engine != 'Unity' or asset.type != 'Texture2D':
+            return False
+        if any(w and w.isRunning() for w in (self.current_worker, self.batch_worker, self.scanner, self.inspector)):
+            QMessageBox.information(self, 'Operation in progress', 'Finish the current operation first.')
+            return False
+        self.current_worker = TextureReplaceThread(self.root, asset, source, restore)
+        self.current_worker.succeeded.connect(self.texture_change_done)
+        self.current_worker.failed.connect(self.task_failed)
+        self.current_worker.finished.connect(self.task_finished)
+        self.current_worker.start()
+        self.status.setText('Restoring original Unity container...' if restore else 'Backing up and installing Unity texture...')
+        self.update_buttons()
+        return True
+
+    def texture_change_done(self, result):
+        self.status.setText(f'Unity texture archive {result.operation}: {result.game_file.name}')
+        QMessageBox.information(
+            self, f'Unity archive {result.operation}',
+            f'Game container {result.operation}:\n{result.game_file}\n\n'
+            f'Original archive backup:\n{result.backup_file}\n\n'
+            'Restart the game to pick up asset changes. Press Scan / Refresh '
+            'to re-index files. If the game rejects the archive, close the game '
+            'and use Restore Original.'
+        )
 
     def export(self, kind: str):
         keys = self.selected_keys()
@@ -1177,6 +1404,9 @@ def _packaged_self_test(output_file: str) -> int:
         import fmod_toolkit
         if not getattr(fmod_toolkit, '_meab_optional_audio_disabled', False):
             raise RuntimeError('Audio-only FMOD dependency was not disabled in frozen EXE')
+        import replacement_core  # checks that replacement helpers are bundled
+        assert replacement_core.can_install('Unity', 'Texture2D')
+        assert not replacement_core.can_install('Unreal', 'StaticMesh')
         import_pakfile()  # exercises frozen pyuepak/Oodle runtime
         import cryptography  # noqa: F401
         import vtkmodules.vtkRenderingOpenGL2  # noqa: F401
